@@ -17,6 +17,9 @@ export function createFormatters(locale: Locale): Formatters {
     month: 'long',
     timeZone: 'UTC',
   })
+  const weekdayFormat = new Intl.DateTimeFormat(tag, { weekday: 'short', timeZone: 'UTC' })
+  const dayFormat = new Intl.DateTimeFormat(tag, { day: 'numeric', timeZone: 'UTC' })
+  const monthFormat = new Intl.DateTimeFormat(tag, { month: 'short', timeZone: 'UTC' })
   const timeFormat = new Intl.DateTimeFormat(tag, {
     hour: 'numeric',
     minute: '2-digit',
@@ -26,13 +29,23 @@ export function createFormatters(locale: Locale): Formatters {
   return {
     price: (value) => priceFormat.format(value),
     number: (value) => numberFormat.format(value),
+    dateParts: (isoDate) => {
+      const parsed = new Date(`${isoDate}T00:00:00Z`)
+      return {
+        weekday: weekdayFormat.format(parsed),
+        day: dayFormat.format(parsed),
+        month: monthFormat.format(parsed),
+      }
+    },
     date: (isoDate) => {
       const parsed = new Date(`${isoDate}T00:00:00Z`)
       return Number.isNaN(parsed.getTime()) ? isoDate : dateFormat.format(parsed)
     },
     time: (value) => {
-      const parsed = new Date(`1970-01-01T${value}:00Z`)
-      return Number.isNaN(parsed.getTime()) ? value : timeFormat.format(parsed)
+      // Slots after midnight are stored as "24:30"; wrap them onto the clock face
+      const [h, m] = value.split(':').map(Number)
+      if (h === undefined || m === undefined || Number.isNaN(h) || Number.isNaN(m)) return value
+      return timeFormat.format(new Date(Date.UTC(1970, 0, 1, h % 24, m)))
     },
   }
 }

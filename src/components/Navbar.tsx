@@ -9,7 +9,7 @@ import { useI18n } from '../i18n'
 import { NAV_SECTIONS } from '../types/section'
 import { LanguageToggle } from './LanguageToggle'
 import { Logo } from './Logo'
-import { WhatsAppIcon } from './WhatsAppIcon'
+import { WhatsAppIcon } from './icons/WhatsAppIcon'
 
 export function Navbar() {
   const { t } = useI18n()

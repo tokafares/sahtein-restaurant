@@ -40,7 +40,11 @@ _Placeholders: add images to `docs/screenshots/`._
     - The cart is saved to `localStorage`.
   - **Gallery:** CSS-columns masonry layout with a lightbox. The lightbox has keyboard navigation, a focus trap, and returns focus to the thumbnail on close.
   - **Reservation form:**
-    - Client-side validation: Egyptian mobile numbers (Arabic-Indic digits accepted), no past dates, opening-hours time window, 1–12 guests, notes up to 300 characters.
+    - Custom, fully translated date and time pickers instead of native inputs, which show English placeholders in Arabic mode:
+      - Date: horizontally scrollable chips for the next 14 bookable days (Today/Tomorrow, then weekday, day and month), with Arabic-Indic digits in Arabic.
+      - Time: a grid of 30-minute slots inside that day's opening hours. Friday has later hours, and slots after midnight are marked.
+      - Both are WAI-ARIA radio groups: one tab stop, arrow keys that follow reading direction (ArrowLeft moves forward in RTL), and Home/End.
+    - Client-side validation: Egyptian mobile numbers (Arabic-Indic digits accepted), a bookable date and slot, 1–12 guests, notes up to 300 characters.
     - Errors are linked to their fields with `aria-describedby`, and the first invalid field gets focus.
     - A success state shows a summary of the booking.
   - **Testimonials:** 3 reviews with accessible star ratings.
@@ -90,10 +94,7 @@ npm run preview
 ## Decisions made
 
 - **Tailwind v4** with CSS-first `@theme` tokens instead of a `tailwind.config.js`.
-- **Brand icons:** lucide-react 1.x no longer ships brand logos (Instagram, Facebook, WhatsApp). To follow the "lucide-react only" rule:
-  - WhatsApp actions use `MessageCircle`.
-  - Social links use `Camera` (Instagram), `ThumbsUp` (Facebook) and `Music2` (TikTok).
-  - Each social link has the platform name as its `aria-label` and `title`.
+- **Brand icons:** lucide-react 1.x no longer ships brand logos, so WhatsApp, Instagram, Facebook and TikTok are small inline SVG components in `src/components/icons/`. They use the official [Simple Icons](https://simpleicons.org) paths (CC0), are monochrome, and fill with `currentColor`. Every other icon is still lucide-react.
 - **"Order on WhatsApp" in the navbar** opens the order panel rather than an empty chat, so visitors can review their items before sending. With an empty cart, the panel points them to the menu.
 - **Translations hold all copy.** Data files hold only ids, prices and image ids, so the menu can't drift out of sync between languages.
 - **Number formatting:** Arabic uses Arabic-Indic digits throughout (prices, counts, dates, the WhatsApp message). The phone input stays `dir="ltr"` and accepts both digit systems.
@@ -104,6 +105,13 @@ npm run preview
 - **Photos:**
   - Real Unsplash photos, chosen by checking each candidate visually so every dish shows the right food.
   - Where Unsplash had no photo of an exact dish, the menu was adapted. Ful medames and molokhia were swapped for warak enab, lentil soup and a breakfast tray. Sugarcane juice uses a fresh-juice photo.
-- **Reservation booking window:** 12:00–23:30, at most 12 guests (larger groups are asked to call). Submission is simulated with a 700 ms delay, and there is no backend.
+- **Reservation schedule** (`src/lib/schedule.ts`, constants in `src/data/site.ts`):
+  - Opening hours are Saturday–Thursday 12:00–00:00 and Friday 13:00–01:00.
+  - Slots run every 30 minutes, with the last seating 30 minutes before closing.
+  - Same-day bookings need 60 minutes' notice. The 14-day window skips today once it has no slots left.
+  - Slots after midnight are stored as `24:30`, so a Friday late table stays on the Friday booking.
+  - Dates and times use the visitor's local clock.
+  - At most 12 guests (larger groups are asked to call). Submission is simulated with a 700 ms delay, and there is no backend.
+- **Floating cart vs. footer:** while the cart button is visible, the footer's bottom bar gets extra bottom padding, so at the end of the page the button sits below "Back to top" instead of covering it (checked at 375px and 1280px, in both directions).
 - **Testimonial avatars** show initials instead of stock faces: one letter in Arabic, because joined Arabic letters read as a word, and two in English.
 - **Off-canvas drawers** are rendered outside the sticky header, because its `backdrop-filter` would otherwise trap fixed children. They are also clipped with `overflow-hidden`, so the off-screen panel can't cause horizontal scroll in RTL.

@@ -14,8 +14,19 @@ export const images = {
   reservation: 'photo-1658416439082-02fdbf7fb61c',
 } as const
 
-/** Booking window (24h "HH:mm") */
-export const BOOKING_OPEN = '12:00'
-export const BOOKING_CLOSE = '23:30'
+/**
+ * Opening hours in minutes from the start of the day. Close can pass midnight
+ * (Friday closes at 01:00, i.e. 25 × 60).
+ */
+export const OPENING_HOURS = {
+  default: { open: 12 * 60, close: 24 * 60 }, // Saturday–Thursday 12:00–00:00
+  friday: { open: 13 * 60, close: 25 * 60 }, // Friday 13:00–01:00
+} as const
+export const SLOT_INTERVAL_MINUTES = 30
+/** Last table is seated this long before closing */
+export const LAST_SEATING_BEFORE_CLOSE = 30
+/** Same-day bookings need at least this much notice */
+export const BOOKING_LEAD_MINUTES = 60
+export const BOOKING_DAYS_AHEAD = 14
 export const MAX_GUESTS = 12
 export const NOTES_MAX_LENGTH = 300

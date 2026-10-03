@@ -7,7 +7,7 @@ import { useLockBodyScroll } from '../hooks/useLockBodyScroll'
 import { useI18n } from '../i18n'
 import { unsplash } from '../lib/unsplash'
 import { buildOrderMessage, whatsappUrl } from '../lib/whatsapp'
-import { WhatsAppIcon } from './WhatsAppIcon'
+import { WhatsAppIcon } from './icons/WhatsAppIcon'
 
 export function CartPanel() {
   const { t, fmt } = useI18n()

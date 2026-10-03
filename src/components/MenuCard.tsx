@@ -4,7 +4,7 @@ import { useCart } from '../context/useCart'
 import { useI18n } from '../i18n'
 import { unsplash, unsplashSrcSet } from '../lib/unsplash'
 import type { MenuItem, MenuTag } from '../types/menu'
-import { WhatsAppIcon } from './WhatsAppIcon'
+import { WhatsAppIcon } from './icons/WhatsAppIcon'
 
 const tagIcons: Record<MenuTag, LucideIcon> = { popular: Star, vegetarian: Leaf, spicy: Flame }
 const tagStyles: Record<MenuTag, string> = {

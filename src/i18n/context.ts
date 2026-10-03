@@ -8,7 +8,9 @@ export interface Formatters {
   number: (value: number) => string
   /** ISO date (yyyy-mm-dd) to a readable long date */
   date: (isoDate: string) => string
-  /** 24h "HH:mm" to a locale time string */
+  /** ISO date split into short localized parts for date chips */
+  dateParts: (isoDate: string) => { weekday: string; day: string; month: string }
+  /** "HH:mm" (hours may exceed 23 for after-midnight slots) to a locale time string */
   time: (value: string) => string
 }
 

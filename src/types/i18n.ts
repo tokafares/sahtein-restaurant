@@ -130,6 +130,17 @@ export interface Translations {
       notes: FieldCopy
     }
     guestsOption: (count: number, formatted: string) => string
+    datePicker: {
+      today: string
+      tomorrow: string
+      earlier: string
+      later: string
+    }
+    timePicker: {
+      chooseDateFirst: string
+      hoursHint: (from: string, to: string) => string
+      afterMidnight: string
+    }
     optional: string
     submit: string
     submitting: string

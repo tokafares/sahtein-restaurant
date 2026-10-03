@@ -1,20 +1,26 @@
-import { ArrowUp, Camera, Clock, ExternalLink, Mail, MapPin, Music2, Phone, ThumbsUp, type LucideIcon } from 'lucide-react'
+import { ArrowUp, Clock, ExternalLink, Mail, MapPin, Phone } from 'lucide-react'
+import type { ComponentType } from 'react'
 import { Logo } from '../components/Logo'
-import { WhatsAppIcon } from '../components/WhatsAppIcon'
+import type { BrandIconProps } from '../components/icons/BrandIcon'
+import { FacebookIcon } from '../components/icons/FacebookIcon'
+import { InstagramIcon } from '../components/icons/InstagramIcon'
+import { TikTokIcon } from '../components/icons/TikTokIcon'
+import { WhatsAppIcon } from '../components/icons/WhatsAppIcon'
 import { EMAIL_HREF, MAP_DIRECTIONS_URL, MAP_EMBED_URL, PHONE_HREF } from '../data/site'
+import { useCart } from '../context/useCart'
 import { useI18n } from '../i18n'
 import { whatsappUrl } from '../lib/whatsapp'
 import type { SocialId } from '../types/i18n'
 
-// lucide-react has no brand logos; these neutral glyphs stand in, with the platform name as the accessible label.
-const socials: readonly { id: SocialId; icon: LucideIcon; href: string }[] = [
-  { id: 'instagram', icon: Camera, href: 'https://instagram.com/' },
-  { id: 'facebook', icon: ThumbsUp, href: 'https://facebook.com/' },
-  { id: 'tiktok', icon: Music2, href: 'https://tiktok.com/' },
+const socials: readonly { id: SocialId; icon: ComponentType<BrandIconProps>; href: string }[] = [
+  { id: 'instagram', icon: InstagramIcon, href: 'https://instagram.com/' },
+  { id: 'facebook', icon: FacebookIcon, href: 'https://facebook.com/' },
+  { id: 'tiktok', icon: TikTokIcon, href: 'https://tiktok.com/' },
 ]
 
 export function Footer() {
   const { t, fmt } = useI18n()
+  const cart = useCart()
   const year = fmt.number(new Date().getFullYear()).replace(/[٬,]/g, '')
 
   return (
@@ -106,7 +112,7 @@ export function Footer() {
                     title={t.footer.social[id]}
                     className="grid size-11 place-items-center rounded-full bg-cream-50/10 text-cream-50 transition hover:-translate-y-0.5 hover:bg-terracotta-600"
                   >
-                    <Icon aria-hidden="true" className="size-5" />
+                    <Icon className="size-[1.125rem]" />
                   </a>
                 </li>
               ))}
@@ -126,7 +132,12 @@ export function Footer() {
       </div>
 
       <div className="border-t border-cream-50/10">
-        <div className="container-page flex flex-col items-center justify-between gap-3 py-6 text-center text-sm sm:flex-row sm:text-start">
+        {/* Extra bottom padding while the floating cart is visible, so it never covers this bar */}
+        <div
+          className={`container-page flex flex-col items-center justify-between gap-3 pt-6 text-center text-sm sm:flex-row sm:text-start ${
+            cart.count > 0 ? 'pb-24 sm:pb-28' : 'pb-6'
+          }`}
+        >
           <div>
             <p>{t.footer.rights(year)}</p>
             <p className="mt-1 text-olive-200">{t.footer.concept}</p>

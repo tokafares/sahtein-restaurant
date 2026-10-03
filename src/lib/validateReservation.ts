@@ -1,4 +1,5 @@
-import { BOOKING_CLOSE, BOOKING_OPEN, MAX_GUESTS, NOTES_MAX_LENGTH } from '../data/site'
+import { MAX_GUESTS, NOTES_MAX_LENGTH } from '../data/site'
+import { bookableDates, slotsFor, toIsoDate } from './schedule'
 import type { ReservationErrors, ReservationValues } from '../types/reservation'
 
 const EGYPT_MOBILE = /^(?:\+20|0020|20)?0?1[0125]\d{8}$/
@@ -12,13 +13,7 @@ export function normalizePhone(value: string): string {
   return toAsciiDigits(value).replace(/[\s\-()]/g, '')
 }
 
-/** Today's date as yyyy-mm-dd in the visitor's local time zone */
-export function todayIso(now: Date = new Date()): string {
-  const offset = now.getTimezoneOffset() * 60_000
-  return new Date(now.getTime() - offset).toISOString().slice(0, 10)
-}
-
-export function validateReservation(values: ReservationValues, today: string = todayIso()): ReservationErrors {
+export function validateReservation(values: ReservationValues, now: Date = new Date()): ReservationErrors {
   const errors: ReservationErrors = {}
   const name = values.name.trim()
   const phone = normalizePhone(values.phone)
@@ -30,11 +25,13 @@ export function validateReservation(values: ReservationValues, today: string = t
   if (!phone) errors.phone = 'phoneRequired'
   else if (!EGYPT_MOBILE.test(phone)) errors.phone = 'phoneInvalid'
 
+  // The pickers only offer valid choices; these checks also catch a date or slot
+  // that expired while the form was open.
   if (!values.date) errors.date = 'dateRequired'
-  else if (values.date < today) errors.date = 'datePast'
+  else if (values.date < toIsoDate(now) || !bookableDates(now).includes(values.date)) errors.date = 'datePast'
 
   if (!values.time) errors.time = 'timeRequired'
-  else if (values.time < BOOKING_OPEN || values.time > BOOKING_CLOSE) errors.time = 'timeHours'
+  else if (values.date && !errors.date && !slotsFor(values.date, now).includes(values.time)) errors.time = 'timeHours'
 
   if (!Number.isInteger(guests) || guests < 1 || guests > MAX_GUESTS) errors.guests = 'guestsRange'
 

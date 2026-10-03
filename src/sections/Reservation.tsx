@@ -1,11 +1,14 @@
 import { AlertCircle, CalendarCheck, CheckCircle2, Clock, Loader2, Phone, User, Users } from 'lucide-react'
-import { useRef, useState, type ChangeEvent, type FormEvent, type ReactNode } from 'react'
+import { useMemo, useRef, useState, type ChangeEvent, type FormEvent, type ReactNode } from 'react'
+import { DateChips } from '../components/DateChips'
 import { Reveal } from '../components/Reveal'
 import { SectionHeading } from '../components/SectionHeading'
-import { BOOKING_CLOSE, BOOKING_OPEN, MAX_GUESTS, NOTES_MAX_LENGTH, images } from '../data/site'
+import { TimeSlots } from '../components/TimeSlots'
+import { MAX_GUESTS, NOTES_MAX_LENGTH, images } from '../data/site'
 import { useI18n } from '../i18n'
 import { unsplash, unsplashSrcSet } from '../lib/unsplash'
-import { todayIso, validateReservation } from '../lib/validateReservation'
+import { bookableDates, fromMinutes, hoursFor, slotsFor } from '../lib/schedule'
+import { validateReservation } from '../lib/validateReservation'
 import type { ReservationErrors, ReservationField, ReservationValues } from '../types/reservation'
 
 const EMPTY: ReservationValues = { name: '', phone: '', date: '', time: '', guests: '', notes: '' }
@@ -24,18 +27,36 @@ interface FieldProps {
   hint?: string
   children: ReactNode
   className?: string
+  /** For radio groups: render a plain label element referenced by aria-labelledby */
+  group?: boolean
 }
 
-function Field({ id, label, error, icon, optional, hint, children, className = '' }: FieldProps) {
+function Field({ id, label, error, icon, optional, hint, children, className = '', group = false }: FieldProps) {
+  const labelClass = 'mb-1.5 flex items-center gap-2 text-sm font-bold text-olive-900'
+  const labelContent = (
+    <>
+      {icon}
+      {label}
+      {optional && <span className="font-medium text-ink-500">({optional})</span>}
+    </>
+  )
   return (
-    <div className={className}>
-      <label htmlFor={`res-${id}`} className="mb-1.5 flex items-center gap-2 text-sm font-bold text-olive-900">
-        {icon}
-        {label}
-        {optional && <span className="font-medium text-ink-500">({optional})</span>}
-      </label>
+    <div className={`min-w-0 ${className}`}>
+      {group ? (
+        <p id={`res-${id}-label`} className={labelClass}>
+          {labelContent}
+        </p>
+      ) : (
+        <label htmlFor={`res-${id}`} className={labelClass}>
+          {labelContent}
+        </label>
+      )}
       {children}
-      {hint && !error && <p className="mt-1.5 text-xs text-ink-500">{hint}</p>}
+      {hint && !error && (
+        <p id={`res-${id}-hint`} className="mt-1.5 text-xs text-ink-500">
+          {hint}
+        </p>
+      )}
       {error && (
         <p id={`res-${id}-error`} className="mt-1.5 flex items-center gap-1.5 text-sm font-medium text-terracotta-700">
           <AlertCircle aria-hidden="true" className="size-4 shrink-0" />
@@ -55,24 +76,37 @@ export function Reservation() {
   const [confirmed, setConfirmed] = useState<ReservationValues | null>(null)
   const formRef = useRef<HTMLFormElement>(null)
   const successRef = useRef<HTMLDivElement>(null)
-  const today = todayIso()
+  // Computed once per mount; validation re-checks against the clock on submit
+  const dates = useMemo(() => bookableDates(), [])
+  const slots = useMemo(() => (values.date ? slotsFor(values.date) : []), [values.date])
+
+  const update = (next: ReservationValues) => {
+    setValues(next)
+    // After the first submit attempt, re-validate live so errors clear as soon as they're fixed
+    if (submitted) setErrors(validateReservation(next))
+  }
 
   const onChange = (event: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const field = event.target.name as ReservationField
-    const next = { ...values, [field]: event.target.value }
-    setValues(next)
-    // After the first submit attempt, re-validate live so errors clear as soon as they're fixed
-    if (submitted) setErrors(validateReservation(next, today))
+    update({ ...values, [field]: event.target.value })
   }
+
+  // Keep the chosen time only if the new date offers it (Friday opens later)
+  const onDateChange = (date: string) =>
+    update({ ...values, date, time: slotsFor(date).includes(values.time) ? values.time : '' })
+  const onTimeChange = (time: string) => update({ ...values, time })
 
   const onSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setSubmitted(true)
-    const nextErrors = validateReservation(values, today)
+    const nextErrors = validateReservation(values)
     setErrors(nextErrors)
     const firstInvalid = FIELD_ORDER.find((field) => nextErrors[field])
     if (firstInvalid) {
-      formRef.current?.querySelector<HTMLElement>(`#res-${firstInvalid}`)?.focus()
+      const target = formRef.current?.querySelector<HTMLElement>(`#res-${firstInvalid}`)
+      // Radio groups take focus on their single tabbable option
+      const option = target?.getAttribute('role') === 'radiogroup' ? target.querySelector<HTMLElement>('[tabindex="0"]') : null
+      ;(option ?? target)?.focus()
       return
     }
     setStatus('submitting')
@@ -108,6 +142,10 @@ export function Reservation() {
   const hasErrors = submitted && Object.keys(errors).length > 0
   const fields = t.reservation.fields
   const iconClass = 'size-4 text-terracotta-600'
+  const dayHours = values.date ? hoursFor(values.date) : null
+  const timeHint = dayHours
+    ? t.reservation.timePicker.hoursHint(fmt.time(fromMinutes(dayHours.open)), fmt.time(fromMinutes(dayHours.close)))
+    : undefined
 
   return (
     <section id="reservation" aria-labelledby="reservation-title" className="bg-olive-900 py-20 text-cream-50 sm:py-28">
@@ -214,28 +252,56 @@ export function Reservation() {
                   />
                 </Field>
 
-                <Field id="date" label={fields.date.label} error={errorText('date')} icon={<CalendarCheck aria-hidden="true" className={iconClass} />}>
-                  <input
-                    {...a11yProps('date')}
-                    type="date"
-                    min={today}
+                <Field
+                  id="date"
+                  group
+                  label={fields.date.label}
+                  error={errorText('date')}
+                  icon={<CalendarCheck aria-hidden="true" className={iconClass} />}
+                  className="sm:col-span-2"
+                >
+                  <DateChips
+                    id="res-date"
+                    labelId="res-date-label"
+                    dates={dates}
                     value={values.date}
-                    onChange={onChange}
-                    className={`${inputBase} min-h-12 ${borderFor('date')}`}
+                    onChange={onDateChange}
+                    invalid={Boolean(errors.date)}
+                    describedBy={errors.date ? 'res-date-error' : undefined}
                   />
                 </Field>
 
-                <Field id="time" label={fields.time.label} error={errorText('time')} icon={<Clock aria-hidden="true" className={iconClass} />}>
-                  <input
-                    {...a11yProps('time')}
-                    type="time"
-                    min={BOOKING_OPEN}
-                    max={BOOKING_CLOSE}
-                    step={900}
-                    value={values.time}
-                    onChange={onChange}
-                    className={`${inputBase} min-h-12 ${borderFor('time')}`}
-                  />
+                <Field
+                  id="time"
+                  group
+                  label={fields.time.label}
+                  error={errorText('time')}
+                  hint={timeHint}
+                  icon={<Clock aria-hidden="true" className={iconClass} />}
+                  className="sm:col-span-2"
+                >
+                  {values.date ? (
+                    <TimeSlots
+                      key={values.date}
+                      id="res-time"
+                      labelId="res-time-label"
+                      slots={slots}
+                      value={values.time}
+                      onChange={onTimeChange}
+                      invalid={Boolean(errors.time)}
+                      describedBy={errors.time ? 'res-time-error' : timeHint ? 'res-time-hint' : undefined}
+                    />
+                  ) : (
+                    <p
+                      id="res-time"
+                      tabIndex={-1}
+                      className={`rounded-xl border border-dashed px-4 py-3 text-sm text-ink-500 ${
+                        errors.time ? 'border-terracotta-500' : 'border-sand-300'
+                      }`}
+                    >
+                      {t.reservation.timePicker.chooseDateFirst}
+                    </p>
+                  )}
                 </Field>
 
                 <Field
