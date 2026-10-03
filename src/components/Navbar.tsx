@@ -106,7 +106,7 @@ export function Navbar() {
 
       {/* Mobile drawer */}
       <div
-        className={`fixed inset-0 z-50 overflow-hidden transition-[visibility] duration-300 lg:hidden ${mobileOpen ? 'visible' : 'invisible'}`}
+        className={`fixed inset-0 z-50 overflow-hidden transition-[visibility] lg:hidden ${mobileOpen ? 'visible duration-0' : 'invisible duration-300'}`}
         aria-hidden={!mobileOpen}
       >
         <div

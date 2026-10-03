@@ -33,7 +33,7 @@ export function CartPanel() {
   const empty = cart.lines.length === 0
 
   return (
-    <div className={`fixed inset-0 z-50 overflow-hidden transition-[visibility] duration-300 ${isOpen ? 'visible' : 'invisible'}`}>
+    <div className={`fixed inset-0 z-50 overflow-hidden transition-[visibility] ${isOpen ? 'visible duration-0' : 'invisible duration-300'}`}>
       <div
         aria-hidden="true"
         onClick={close}
