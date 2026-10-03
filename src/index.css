@@ -1,0 +1,126 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-olive-950: #1e2616;
+  --color-olive-900: #2a3520;
+  --color-olive-800: #3b4a2a;
+  --color-olive-700: #4c5e37;
+  --color-olive-600: #627548;
+  --color-olive-200: #cfd5bf;
+  --color-olive-100: #e6e9db;
+
+  --color-terracotta-700: #8f3f22;
+  --color-terracotta-600: #a84c2b;
+  --color-terracotta-500: #c0603a;
+  --color-terracotta-300: #e4a385;
+  --color-terracotta-100: #f6dfd2;
+
+  --color-cream-50: #fcf8f1;
+  --color-cream-100: #f7f0e3;
+  --color-cream-200: #efe4d0;
+  --color-sand-300: #e1cfae;
+
+  --color-ink-900: #2b2420;
+  --color-ink-700: #4a403a;
+  --color-ink-500: #6f6359;
+
+  --color-saffron-500: #d99a3d;
+
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-arabic: 'Cairo', ui-sans-serif, system-ui, sans-serif;
+
+  --shadow-card: 0 1px 2px rgb(43 36 32 / 0.06), 0 8px 24px -12px rgb(43 36 32 / 0.18);
+  --shadow-lift: 0 2px 4px rgb(43 36 32 / 0.06), 0 20px 40px -16px rgb(43 36 32 / 0.3);
+
+  --animate-fade-in: fade-in 200ms ease-out both;
+  --animate-pop: pop 260ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes pop {
+    0% {
+      transform: scale(0.6);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    /* Sticky navbar offset for anchor jumps */
+    scroll-padding-top: 5rem;
+    -webkit-tap-highlight-color: transparent;
+    text-rendering: optimizeLegibility;
+  }
+
+  html[lang='ar'] {
+    --font-sans: var(--font-arabic);
+  }
+
+  body {
+    @apply bg-cream-100 text-ink-900 antialiased;
+  }
+
+  /* Mouse/touch focus: no outline. Keyboard focus: a clear terracotta ring. */
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-terracotta-500);
+    outline-offset: 3px;
+    border-radius: 0.375rem;
+  }
+
+  ::selection {
+    background: var(--color-terracotta-100);
+    color: var(--color-ink-900);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@utility container-page {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 76rem;
+  padding-inline: 1rem;
+  @media (width >= 40rem) {
+    padding-inline: 1.5rem;
+  }
+  @media (width >= 64rem) {
+    padding-inline: 2rem;
+  }
+}
+
+/* Subtle geometric pattern used behind some sections */
+@utility bg-pattern {
+  background-image: radial-gradient(circle at 1px 1px, rgb(59 74 42 / 0.09) 1px, transparent 0);
+  background-size: 22px 22px;
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
