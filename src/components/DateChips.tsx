@@ -1,6 +1,6 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRovingRadio } from '../hooks/useRovingRadio'
+import { useScrollEdges } from '../hooks/useScrollEdges'
 import { useI18n } from '../i18n'
 import { toIsoDate } from '../lib/schedule'
 
@@ -17,23 +17,8 @@ interface DateChipsProps {
 /** Horizontally scrollable, fully localized date picker built as a radio group. */
 export function DateChips({ id, labelId, dates, value, onChange, invalid, describedBy }: DateChipsProps) {
   const { t, fmt, dir } = useI18n()
-  const scrollerRef = useRef<HTMLDivElement>(null)
-  const [edges, setEdges] = useState({ atStart: true, atEnd: false })
+  const { ref: scrollerRef, edges, update: updateEdges, fadeStyle } = useScrollEdges<HTMLDivElement>(dir)
   const { getOptionProps } = useRovingRadio(dates, value, onChange, dir)
-
-  // In RTL, scrollLeft runs from 0 toward negative values, so compare magnitudes
-  const updateEdges = useCallback(() => {
-    const el = scrollerRef.current
-    if (!el) return
-    const offset = Math.abs(el.scrollLeft)
-    setEdges({ atStart: offset <= 2, atEnd: offset >= el.scrollWidth - el.clientWidth - 2 })
-  }, [])
-
-  useEffect(() => {
-    updateEdges()
-    window.addEventListener('resize', updateEdges)
-    return () => window.removeEventListener('resize', updateEdges)
-  }, [updateEdges, dir])
 
   /** Scroll toward inline-start (-1) or inline-end (+1) */
   const page = (direction: 1 | -1) => {
@@ -76,6 +61,7 @@ export function DateChips({ id, labelId, dates, value, onChange, invalid, descri
         aria-describedby={describedBy}
         aria-invalid={invalid || undefined}
         onScroll={updateEdges}
+        style={fadeStyle}
         className="no-scrollbar -mx-6 flex snap-x snap-mandatory scroll-px-6 gap-2 overflow-x-auto px-6 py-1 sm:mx-0 sm:scroll-px-1 sm:px-1"
       >
         {dates.map((iso, index) => {

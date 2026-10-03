@@ -112,6 +112,10 @@ npm run preview
   - Slots after midnight are stored as `24:30`, so a Friday late table stays on the Friday booking.
   - Dates and times use the visitor's local clock.
   - At most 12 guests (larger groups are asked to call). Submission is simulated with a 700 ms delay, and there is no backend.
-- **Floating cart vs. footer:** while the cart button is visible, the footer's bottom bar gets extra bottom padding, so at the end of the page the button sits below "Back to top" instead of covering it (checked at 375px and 1280px, in both directions).
+- **Floating cart button:**
+  - Below 640px it is a compact 56px circle (icon and item-count badge only), so it covers as little of the menu cards and hero as possible. From 640px up it is a pill that also shows the total.
+  - It is removed entirely (hidden from view, focus and screen readers) while the cart is empty.
+  - While it is visible, the footer's bottom bar gets extra bottom padding, so at the end of the page the button sits below "Back to top". The page also gets `scroll-padding-bottom`, so anchor jumps and keyboard focus never land behind it. Checked at 375px and 1280px, in both directions.
+- **Scroll fades:** the menu category tabs and the reservation date chips fade out on whichever inline edge still has more content (direction-aware for RTL). The fade disappears when everything fits. Selecting a tab scrolls it fully into view.
 - **Testimonial avatars** show initials instead of stock faces: one letter in Arabic, because joined Arabic letters read as a word, and two in English.
 - **Off-canvas drawers** are rendered outside the sticky header, because its `backdrop-filter` would otherwise trap fixed children. They are also clipped with `overflow-hidden`, so the off-screen panel can't cause horizontal scroll in RTL.
