@@ -2,19 +2,21 @@
 
 A bilingual (Arabic / English) landing page for **Sahtein**, a fictional modern Egyptian-Levantine restaurant in Zamalek, Cairo. Arabic is the default language, with a full right-to-left layout.
 
+**[Live demo](https://sahtein-restaurant.vercel.app)**
+
+![Sahtein hero section in Arabic](docs/screenshots/hero-ar.png)
+
 > **Concept project.** Sahtein is a fictional restaurant built for a portfolio. The phone number, WhatsApp number, address, reviews and social links are placeholders. Food photography comes from [Unsplash](https://unsplash.com).
 
 ## Screenshots
 
-| Arabic (RTL) desktop | English (LTR) desktop |
+| Menu (Arabic, RTL) | Hero (English, LTR) |
 | --- | --- |
-| ![Arabic hero](docs/screenshots/hero-ar.png) | ![English hero](docs/screenshots/hero-en.png) |
+| ![Menu section in Arabic](docs/screenshots/menu-ar.png) | ![Hero section in English](docs/screenshots/hero-en.png) |
 
-| Mobile menu (375px) | WhatsApp cart | Reservation |
-| --- | --- | --- |
-| ![Mobile](docs/screenshots/mobile-menu.png) | ![Cart](docs/screenshots/cart.png) | ![Reservation](docs/screenshots/reservation.png) |
-
-_Placeholders: add images to `docs/screenshots/`._
+| Reservation form | Mobile: menu with items in the cart (375px) |
+| --- | --- |
+| ![Reservation form with a date and time slot selected](docs/screenshots/reservation.png) | <img src="docs/screenshots/mobile-menu.png" alt="Arabic menu on mobile with items in the WhatsApp cart" width="280"> |
 
 ## Features
 
